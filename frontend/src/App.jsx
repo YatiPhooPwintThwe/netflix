@@ -1,22 +1,38 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+// App.jsx
+import { useEffect } from "react";
+import { Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { Loader } from "lucide-react";
+import { Toaster } from "react-hot-toast";
+
+import { useAuthStore } from "./store/useAuthStore.js";
+
 import HomePage from "./pages/home/HomePage.jsx";
 import LoginPage from "./pages/Loginpage";
 import SignUpPage from "./pages/SignUppage.jsx";
 import WatchPage from "./pages/WatchPage.jsx";
-import Footer from "./component/Footer.jsx";
-import { Toaster } from "react-hot-toast";
-import { useAuthStore } from "./store/useAuthStore.js";
-import { useEffect } from "react";
-import { Loader } from "lucide-react";
 import SearchPage from "./pages/SearchPage.jsx";
 import SearchHistoryPage from "./pages/SearchHistoryPage.jsx";
-import NotFoundPage from "./pages/404Page.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
 import ForgetPasswordPage from "./pages/ForgetPassword.jsx";
 import ResetPasswordPage from "./pages/ResetPassword.jsx";
+import NotFoundPage from "./pages/404Page.jsx";
+import Footer from "./component/Footer.jsx";
 
-function App() {
-  const { user, isCheckingAuth, authCheck } = useAuthStore();
+// ----- Route guards -----
+function RequireAuth() {
+  const { user } = useAuthStore();
+  // If there's no user, never mount children → no data fetch calls → no 401s
+  return user ? <Outlet /> : <Navigate to="/login" replace />;
+}
+
+function PublicOnly() {
+  const { user } = useAuthStore();
+  // Logged-in users shouldn't see login/signup
+  return user ? <Navigate to="/" replace /> : <Outlet />;
+}
+
+export default function App() {
+  const { isCheckingAuth, authCheck } = useAuthStore();
 
   useEffect(() => {
     authCheck();
@@ -35,37 +51,31 @@ function App() {
   return (
     <>
       <Routes>
+        {/* Public pages anyone can see */}
         <Route path="/" element={<HomePage />} />
-        <Route
-          path="/login"
-          element={!user ? <LoginPage /> : <Navigate to={"/"} />}
-        />
-        <Route
-          path="/signup"
-          element={!user ? <SignUpPage /> : <Navigate to={"/"} />}
-        />
-        <Route
-          path="/watch/:type/:id"
-          element={user ? <WatchPage /> : <Navigate to={"/login"} />}
-        />
-        <Route
-          path="/search"
-          element={user ? <SearchPage /> : <Navigate to={"/login"} />}
-        />
+        <Route element={<PublicOnly />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+        </Route>
+
+        {/* Public utility pages (no user required) */}
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgetPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-        <Route
-          path="/history"
-          element={user ? <SearchHistoryPage /> : <Navigate to={"/login"} />}
-        />
+
+        {/* Protected pages: mounted only when user is present */}
+        <Route element={<RequireAuth />}>
+          <Route path="/watch/:type/:id" element={<WatchPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/history" element={<SearchHistoryPage />} />
+        </Route>
+
+        {/* 404 */}
         <Route path="/*" element={<NotFoundPage />} />
       </Routes>
-      <Footer />
 
+      <Footer />
       <Toaster />
     </>
   );
 }
-
-export default App;
