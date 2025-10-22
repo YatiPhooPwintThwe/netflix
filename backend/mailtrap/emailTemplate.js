@@ -114,11 +114,8 @@ export const passwordResetRequestTemplate = (resetURL) => `
                   </a>
                 </p>
 
-                <p style="color:#555;">If the button doesn’t work, copy and paste this link into your browser:</p>
-                <p><a href="${resetURL}" target="_blank" style="color:#2563eb;word-break:break-all;">${resetURL}</a></p>
-
                 <p style="color:#555;">This link will expire in 1 hour for security reasons.</p>
-                <p>Best regards,<br/>Mini Cart Team</p>
+                <p>Best regards,<br/>Netflix Team</p>
               </td>
             </tr>
 
@@ -135,13 +132,4 @@ export const passwordResetRequestTemplate = (resetURL) => `
 </html>
 `;
 
-export const passwordResetRequestText = (resetURL) =>
-  `Password Reset
 
-We received a request to reset your password.
-If you didn't make this request, you can ignore this email.
-
-Reset your password: ${resetURL}
-
-This link will expire in 1 hour.
-Netflix Team`;
