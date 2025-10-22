@@ -4,7 +4,6 @@ dotenv.config();
 
 import {
   passwordResetRequestTemplate,
-  passwordResetRequestText,
   PASSWORD_RESET_SUCCESS_TEMPLATE,
   VERIFICATION_EMAIL_TEMPLATE,
   
@@ -42,7 +41,7 @@ export async function sendPasswordResetEmail(email, resetURL) {
       to: recipient,
       subject: "Reset your password",
       html: passwordResetRequestTemplate(resetURL),  // ✅ clickable <a>
-      text: passwordResetRequestText(resetURL),      // ✅ plaintext fallback
+      
       category: "Password Reset",
     });
     console.log("Password reset email sent successfully", response);
