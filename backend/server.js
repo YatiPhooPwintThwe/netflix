@@ -56,9 +56,9 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(distPath));
 
   // Express v5 wildcard: use '/*' or '/(.*)' (NOT '*')
-  app.get("/*", (_req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-  });
+  app.get(/.*/, (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 }
 
 app.listen(PORT, () => {
