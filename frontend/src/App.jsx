@@ -1,9 +1,6 @@
 // App.jsx
-import { useEffect } from "react";
-import { Navigate, Route, Routes, Outlet } from "react-router-dom";
-import { Loader } from "lucide-react";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
-
 import { useAuthStore } from "./store/useAuthStore.js";
 
 import HomePage from "./pages/home/HomePage.jsx";
@@ -18,57 +15,27 @@ import ResetPasswordPage from "./pages/ResetPassword.jsx";
 import NotFoundPage from "./pages/404Page.jsx";
 import Footer from "./component/Footer.jsx";
 
-// ----- Route guards -----
-function RequireAuth() {
-  const { user } = useAuthStore();
-  // If there's no user, never mount children → no data fetch calls → no 401s
-  return user ? <Outlet /> : <Navigate to="/login" replace />;
-}
-
-function PublicOnly() {
-  const { user } = useAuthStore();
-  // Logged-in users shouldn't see login/signup
-  return user ? <Navigate to="/" replace /> : <Outlet />;
-}
-
 export default function App() {
-  const { isCheckingAuth, authCheck } = useAuthStore();
-
-  useEffect(() => {
-    authCheck();
-  }, [authCheck]);
-
-  if (isCheckingAuth) {
-    return (
-      <div className="h-screen">
-        <div className="flex justify-center items-center bg-black h-full">
-          <Loader className="animate-spin text-red-600 size-10" />
-        </div>
-      </div>
-    );
-  }
+  // just read the current user; DO NOT call authCheck here
+  const { user } = useAuthStore();
 
   return (
     <>
       <Routes>
-        {/* Public pages anyone can see */}
+        {/* Public pages */}
         <Route path="/" element={<HomePage />} />
-        <Route element={<PublicOnly />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUpPage />} />
-        </Route>
+        <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
+        <Route path="/signup" element={user ? <Navigate to="/" replace /> : <SignUpPage />} />
 
-        {/* Public utility pages (no user required) */}
+        {/* Public utility pages */}
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgetPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-        {/* Protected pages: mounted only when user is present */}
-        <Route element={<RequireAuth />}>
-          <Route path="/watch/:type/:id" element={<WatchPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/history" element={<SearchHistoryPage />} />
-        </Route>
+        {/* “Protected” pages, inline check — no Outlet/guards */}
+        <Route path="/watch/:type/:id" element={user ? <WatchPage /> : <Navigate to="/login" replace />} />
+        <Route path="/search" element={user ? <SearchPage /> : <Navigate to="/login" replace />} />
+        <Route path="/history" element={user ? <SearchHistoryPage /> : <Navigate to="/login" replace />} />
 
         {/* 404 */}
         <Route path="/*" element={<NotFoundPage />} />
